@@ -1,8 +1,10 @@
 require_relative "../util"
 
+DANGER_MESSAGE = "(DANGER: Will cause existing resources to be rebuilt)".freeze
+
 namespace :keys do
   SSHKEY_PATH = File.expand_path("../../../.ssh", __FILE__).freeze
-  desc "Generate new ssh keys"
+  desc "Generate new ssh keys #{DANGER_MESSAGE}"
   task :generate do
     Rake::Task["keys:create_directory"].invoke
     keyfile = File.expand_path("#{SSHKEY_PATH}/aaep-aws")
@@ -23,7 +25,7 @@ namespace :keys do
     end
   end
 
-  desc "Rotate ssh keys"
+  desc "Rotate ssh keys #{DANGER_MESSAGE}"
   task :rotate do
     Rake::Task['keys:generate'].invoke
     Rake::Task['keys:upload'].invoke
