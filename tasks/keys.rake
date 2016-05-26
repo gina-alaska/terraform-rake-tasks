@@ -7,21 +7,18 @@ namespace :keys do
   desc "Generate new ssh keys #{DANGER_MESSAGE}"
   task :generate do
     Rake::Task["keys:create_directory"].invoke
-    keyfile = File.expand_path("#{SSHKEY_PATH}/aaep-aws")
-
-    sh("ssh-keygen -b 2048 -N '' -C 'AWS Deploy Key #{Time.now}' -f #{keyfile}")
+    local_key = File.join(SSHKEY_PATH, key_file)
+    sh("ssh-keygen -b 4096 -N '' -C 'AWS Deploy Key #{Time.now}' -f #{local_key}")
   end
 
   desc "Upload keys to S3"
   task :upload do
     require 'aws-sdk'
 
-    bucket = aaep_tf_bucket
-
-    %w(aaep-aws aaep-aws.pub).each do |file|
+    [key_file, public_key_file].each do |file|
       key = "ssh/#{file}"
       filename = File.join(SSHKEY_PATH, file)
-      bucket.object(key).put(:body => File.open(filename), :server_side_encryption => "aws:kms")
+      tf_bucket.object(key).put(:body => File.open(filename), :server_side_encryption => "aws:kms")
     end
   end
 
@@ -35,20 +32,27 @@ namespace :keys do
   task :fetch do
     Rake::Task["keys:create_directory"].invoke
 
-    bucket = aaep_tf_bucket
     tempfile = File.join(SSHKEY_PATH, "aws-#{Time.now.to_i}")
 
-    %w(aaep-aws aaep-aws.pub).each do |file|
+    [key_file, public_key_file].each do |file|
       keyfile = File.join(SSHKEY_PATH, file)
 
-      bucket.object("ssh/#{file}").get(response_target: tempfile)
+      tf_bucket.object("ssh/#{file}").get(response_target: tempfile)
       FileUtils.mv(tempfile, keyfile)
       FileUtils.rm_f(tempfile) if File.exist?(tempfile)
     end
-    File.chmod(0600, File.join(SSHKEY_PATH, "aaep-aws"))
+    File.chmod(0600, File.join(SSHKEY_PATH, key_file))
   end
 
   task :create_directory do
     FileUtils.mkdir_p(SSHKEY_PATH) unless File.exist?(SSHKEY_PATH)
+  end
+
+  def key_file
+    "aws-#{tf_project}-#{tf_env}"
+  end
+
+  def public_key_file
+    "#{key_file}.pub"
   end
 end
