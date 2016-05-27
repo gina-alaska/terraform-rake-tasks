@@ -1,13 +1,11 @@
-require_relative "../util"
-
 DANGER_MESSAGE = "(DANGER: Will cause existing resources to be rebuilt)".freeze
+include TerraformRakeTasks::Util
 
 namespace :keys do
-  SSHKEY_PATH = File.expand_path(ENV['SSH_KEY_PATH']).freeze
   desc "Generate new ssh keys #{DANGER_MESSAGE}"
   task :generate do
     Rake::Task["keys:create_directory"].invoke
-    local_key = File.join(SSHKEY_PATH, key_file)
+    local_key = File.join(ssh_key_path, key_file)
     sh("ssh-keygen -b 4096 -N '' -C 'AWS Deploy Key #{Time.now}' -f #{local_key}")
   end
 
@@ -17,7 +15,7 @@ namespace :keys do
 
     [key_file, public_key_file].each do |file|
       key = "ssh/#{file}"
-      filename = File.join(SSHKEY_PATH, file)
+      filename = File.join(ssh_key_path, file)
       tf_bucket.object(key).put(:body => File.open(filename), :server_side_encryption => "aws:kms")
     end
   end
@@ -32,20 +30,20 @@ namespace :keys do
   task :fetch do
     Rake::Task["keys:create_directory"].invoke
 
-    tempfile = File.join(SSHKEY_PATH, "aws-#{Time.now.to_i}")
+    tempfile = File.join(ssh_key_path, "aws-#{Time.now.to_i}")
 
     [key_file, public_key_file].each do |file|
-      keyfile = File.join(SSHKEY_PATH, file)
+      keyfile = File.join(ssh_key_path, file)
 
       tf_bucket.object("ssh/#{file}").get(response_target: tempfile)
       FileUtils.mv(tempfile, keyfile)
       FileUtils.rm_f(tempfile) if File.exist?(tempfile)
     end
-    File.chmod(0600, File.join(SSHKEY_PATH, key_file))
+    File.chmod(0600, File.join(ssh_key_path, key_file))
   end
 
   task :create_directory do
-    FileUtils.mkdir_p(SSHKEY_PATH) unless File.exist?(SSHKEY_PATH)
+    FileUtils.mkdir_p(ssh_key_path) unless File.exist?(ssh_key_path)
   end
 
   def key_file
