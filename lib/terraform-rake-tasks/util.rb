@@ -17,7 +17,7 @@ module TerraformRakeTasks
     end
 
     def fetch_credentials!
-      Aws::SharedCredentials.new(profile_name: ENV['AWS_PROFILE'])
+      Aws::SharedCredentials.new(profile_name: (ENV['AWS_PROFILE'] || 'default'))
     end
 
     def tf_bucket
@@ -34,7 +34,7 @@ module TerraformRakeTasks
     end
 
     def ssh_key_path
-      File.expand_path((ENV['SSH_KEY_PATH'] || File.join(ENV['HOME'], '.ssh')))
+      File.expand_path((ENV['SSH_KEY_PATH'] || File.join(ENV['HOME'], '.terraform/ssh')))
     end
   end
 end
