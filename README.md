@@ -21,6 +21,7 @@ TerraformRakeTasks::Tasks.load_tasks!
 This gem uses the following ENV variables:
 
 | Variable Name | purpose | default |
+| ------------- | ------- | ------- |
 | TF_PROJECT    | Name of the terraform project. Should be set to prevent name collisions | tf |
 | TF_ENV        | Terraform Environment. Used for multi-environment repositories. | dev |
 | AWS_PROFILE   | Name of AWS Profile to use | default | 
