@@ -3,6 +3,7 @@ include TerraformRakeTasks::Util
 desc "Initializes terraform remote state"
 task :init do
   next if File.exist?(local_env_state)
+  Rake::Task['setup:s3'].invoke
 
   backend_config_params = {
     bucket: ENV['S3_BUCKET'],
