@@ -1,5 +1,6 @@
 DANGER_MESSAGE = "(DANGER: Will cause existing resources to be rebuilt)".freeze
 include TerraformRakeTasks::Util
+require 'aws-sdk'
 
 namespace :keys do
   desc "Generate new ssh keys #{DANGER_MESSAGE}"
@@ -11,8 +12,6 @@ namespace :keys do
 
   desc "Upload keys to S3"
   task :upload do
-    require 'aws-sdk'
-
     [key_file, public_key_file].each do |file|
       key = "ssh/#{file}"
       filename = File.join(ssh_key_path, file)
