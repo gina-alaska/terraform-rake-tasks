@@ -1,5 +1,11 @@
 module TerraformRakeTasks
   module Util
+    def sh_with_clean_env(*args)
+      Bundler.with_clean_env do
+        sh(*args)
+      end
+    end
+
     def tf_env
       (ENV['TERRAFORM_ENV'] || ENV['TF_ENV'] || "dev").freeze
     end
