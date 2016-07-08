@@ -1,0 +1,25 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    aws-sdk (2.3.10)
+      aws-sdk-resources (= 2.3.10)
+    aws-sdk-core (2.3.10)
+      jmespath (~> 1.0)
+    aws-sdk-resources (2.3.10)
+      aws-sdk-core (= 2.3.10)
+    colorize (0.7.7)
+    dotenv (2.1.1)
+    jmespath (1.2.4)
+      json_pure (>= 1.8.1)
+    json_pure (1.8.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  aws-sdk
+  colorize
+  dotenv
+
+BUNDLED WITH
+   1.11.2
