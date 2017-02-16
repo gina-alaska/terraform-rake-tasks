@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'aws-sdk', '~> 2.3', '>= 2.3.0'
   s.add_dependency 'colorize', '~> 0.7.0', '>= 0.7.0'
   s.add_dependency 'dotenv', '~> 2.1.0', '>= 2.1.0'
-  s.add_dependency 'rake', '~> 11.1.0', '>= 11.1.0'
+  s.add_dependency 'rake', '~> 12.0.0', '>= 12.0.0'
 end
