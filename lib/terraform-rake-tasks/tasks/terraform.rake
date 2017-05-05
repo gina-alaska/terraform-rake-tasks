@@ -7,11 +7,11 @@ task :init do
   backend_config_params = {
     bucket: ENV['S3_BUCKET'],
     key:    remote_env_state,
-    region: ENV['S3_REGION']
+    # region: ENV['S3_REGION']
   }
 
   backend_config = backend_config_params.map{|k,v| "-backend-config=\"#{k}=#{v}\""}
-  sh_with_clean_env("terraform remote config -backend=s3 #{backend_config.join(" ")}")
+  sh_with_clean_env("terraform init -backend #{backend_config.join(" ")}")
 end
 
 %w(plan show get destroy).each do |t|

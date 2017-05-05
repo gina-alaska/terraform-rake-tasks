@@ -46,7 +46,7 @@ namespace :keys do
   end
 
   def key_file
-    "aws-#{tf_project}-#{tf_env}"
+    "aws-#{tf_project}"
   end
 
   def public_key_file

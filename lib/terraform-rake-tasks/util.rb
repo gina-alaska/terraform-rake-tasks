@@ -2,7 +2,7 @@ module TerraformRakeTasks
   module Util
     def sh_with_clean_env(*args)
       # Bundler.with_clean_env do
-        sh(*args)
+      sh(*args)
       # end
     end
 
