@@ -1,0 +1,120 @@
+require 'bundler/setup'
+require 'dotenv'
+require 'dotenv/tasks'
+require 'terraform-rake-tasks/tasks'
+require 'highline'
+require 'colorize'
+
+Kernel.trap(:INT) { print("\n"); exit 1 }
+
+TerraformRakeTasks::Tasks.load_tasks!
+
+# this could be generated automatically bucket
+# i wanted to explicitely set it so we could control order
+def environment_list
+  list = {
+    aws: %w{ deploy vpc },
+    rds: %w{ chatdb ckandb },
+    storage: %w{ ckan_storage static_site },    
+    ec2: %w{ solr chat ckan elb },
+  }
+
+  list[:all] = list.values.flatten.uniq
+
+  list
+end
+
+def load_env(tf_env = nil, &block)
+  if File.exists?('.env')
+    Dotenv.load('.env')
+    # tf_env ||= ENV['TF_ENV']
+  else
+    tf_env ||= ENV['TF_ENV']
+    fail "Please specify the environment to run using TF_ENV=ENVNAME" unless File.exists?("#{tf_env}/.env")
+    Dotenv.load("#{tf_env}/.env")
+  end
+
+  # set some env variables for terraform
+  ENV['TF_ENV'] = tf_env
+  # ENV['REMOTE_TF_STATE']="s3://#{ENV['S3_BUCKET']}/ubermap/#{ENV['TF_PROJECT']}-#{tf_env}.json"
+  ENV['TF_VAR_env']=tf_env
+
+  Dir.chdir(tf_env, &block)
+end
+
+def header(text)
+  text = "*** #{text} ***"
+  puts
+  puts "#{'*' * text.length}".colorize(:green)
+  puts text.colorize(:green)
+  puts "#{'*' * text.length}".colorize(:green)
+  puts
+end
+
+environment_list[:all].each do |name|
+  namespace name.to_sym do
+    %w{ plan apply show get destroy }.each do |action|
+      # desc "Run `terraform #{action}` for #{name} environment"
+      task action.to_sym do
+        header "Running #{name}:#{action}"
+        load_env(name) do
+          Rake::Task[action].reenable # hack to allow task to be called multiple times
+          Rake::Task[action].invoke
+        end
+      end
+    end
+
+    desc "Bootstrap #{name} environment"
+    task :bootstrap do
+      header "Running #{name}:bootstrap"
+      load_env(name) do
+        Rake::Task['bootstrap'].invoke
+      end
+    end
+
+    desc "Clean #{name} terraform states"
+    task :clean do
+      header "Running #{name}:clean"
+      load_env(name) do
+        rm_rf ".terraform"
+      end
+    end
+  end
+end
+
+environment_list.each do |group_name,envs|
+  namespace group_name do
+    %w{ plan apply show get clean }.each do |action|
+      desc "Run `terraform #{action}` for #{envs.join(',')}"
+      task action.to_sym do
+        envs.each do |name|
+          Rake::Task["#{name}:#{action}"].invoke
+        end
+      end
+    end
+    # these items need to run in reverse order
+    %w{ destroy }.each do |action|
+      desc "Run `terraform #{action}` for #{envs.reverse.join(',')}"
+      task action.to_sym do
+        envs.reverse.each do |name|
+          Rake::Task["#{name}:#{action}"].invoke
+        end
+      end
+    end
+  end
+end
+
+desc 'List available environments'
+task :list do
+  puts environment_list[:all].join("\n")
+end
+
+desc 'Create new environment'
+task :create do
+  cli = HighLine.new
+  answer = cli.ask "Environment name:"
+  dirname = answer.gsub(/\s+/, '_')
+
+  FileUtils.mkdir_p(dirname)
+  FileUtils.cp_r(Dir.glob('template/*.tf'), dirname)
+end

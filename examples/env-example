@@ -1,0 +1,21 @@
+export TF_PROJECT=nace
+export AWS_PROFILE=uafgina
+export AWS_DEFAULT_REGION=us-west-2
+export S3_REGION=us-west-2
+export S3_BUCKET=nace-terraform-state
+export SSH_KEY_PATH=${HOME}/.terraform/ssh
+export CHEF_USER=${USER}
+
+# Terraform Variables
+export TF_VAR_project=$TF_PROJECT
+export TF_VAR_profile=$AWS_PROFILE
+export TF_VAR_remote_state_bucket=$S3_BUCKET
+export TF_VAR_credentials_location=${HOME}/.aws/credentials
+export TF_VAR_chef_user_name=${CHEF_USER}
+export TF_VAR_chef_user_key_path=$HOME/.chef/${CHEF_USER}-ualaska.pem
+export TF_VAR_chef_server_url=https://chef.alaska.edu/organizations/gina
+
+export TF_VAR_db_password=
+export TF_VAR_private_key_path="${SSH_KEY_PATH}/aws-${TF_PROJECT}"
+export TF_VAR_public_key_path="${SSH_KEY_PATH}/aws-${TF_PROJECT}.pub"
+export TF_VAR_key_name="deploy-${TF_PROJECT}"
