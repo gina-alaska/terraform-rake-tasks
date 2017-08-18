@@ -28,6 +28,7 @@ module TerraformRakeTasks
 
     def tf_bucket
       s3 = Aws::S3::Resource.new(client: aws_client)
+      puts "s3bucket: #{ENV.inspect}"
       s3.bucket(ENV['S3_BUCKET'])
     end
 
